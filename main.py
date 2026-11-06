@@ -31,22 +31,28 @@ EMOJI = {
 }
 
 def premium(key, fallback):
-    """Return Telegram's custom-emoji HTML tag with a readable fallback."""
-    emoji_id = EMOJI.get(key)
-    if not emoji_id:
-        return fallback
-    return f'<tg-emoji emoji-id="{emoji_id}">{fallback}</tg-emoji>'
+    """Use standard Unicode emoji so every Telegram user can render the message."""
+    return fallback
+
+BUTTON_EMOJI = {
+    "stars": "✨", "accept": "🤝", "cancel": "❌", "back": "⬅️",
+    "support": "💬", "orders": "🛍️", "info": "ℹ️", "help": "❔",
+    "payment": "🔐", "telebirr": "📱", "dashen": "🏦", "ticket": "🎫",
+    "warning": "⚠️", "telegram": "✈️",
+}
 
 def make_button(text, emoji_key=None, callback_data=None, url=None, style=None):
+    # Keep the keyboard compatible: use ordinary emoji in button text rather
+    # than Premium-only custom emoji icons or newer button-style parameters.
+    if emoji_key:
+        emoji = BUTTON_EMOJI.get(emoji_key, "")
+        if emoji:
+            text = f"{emoji} {text}"
     kwargs = {"text": text}
     if callback_data:
         kwargs["callback_data"] = callback_data
     if url:
         kwargs["url"] = url
-    if emoji_key:
-        kwargs["icon_custom_emoji_id"] = EMOJI[emoji_key]
-    if style:
-        kwargs["style"] = style
     return InlineKeyboardButton(**kwargs)
 
 def main_menu():
