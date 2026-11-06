@@ -75,12 +75,21 @@ def back_menu():
 
 WELCOME_TEXT = (
     f'{premium("stars")} <b>WELCOME TO ETHIO ONLINE MARKET!</b>\n'
-    'Buy and sell Ethiopian social-media accounts with escrow support.\n\n'
-    f'{premium("orders")} <b>BUY:</b> Browse YouTube, TikTok, Telegram, Instagram, Facebook and X listings; compare audience, engagement and price.\n'
-    f'{premium("accept")} <b>SELL:</b> Submit your listing and ownership/analytics evidence for review.\n'
-    f'{premium("payment")} <b>PAY:</b> Telebirr, CBE and Bank of Abyssinia; admin verification required.\n'
-    f'{premium("support")} <b>HELP:</b> Tap Support or contact @mr_ebek / @EXO_SMM. Never share passwords or login codes.\n\n'
-    'Visit our website to get started. Send /start for menu.'
+    'Your trusted marketplace for discovering, buying, and selling Ethiopian social-media assets with escrow-supported transactions.\n\n'
+    'Welcome! Ethio Online Market (EOM) connects buyers and sellers of social-media channels and accounts. Browse available listings, compare details, or publish your own listing and reach interested buyers.\n\n'
+    f'{premium("orders")} <b>BUY &amp; EXPLORE</b>\n'
+    'Discover YouTube channels, TikTok accounts, Telegram channels, Instagram pages, Facebook pages, and X (Twitter) accounts. Review listing details, audience size, engagement information, category, and asking price before choosing what fits your goals.\n\n'
+    f'{premium("accept")} <b>SELL YOUR SOCIAL-MEDIA ASSET</b>\n'
+    'Have a channel or account you want to sell? Create an account on our website, submit your listing with the required details and ownership/analytics evidence, and wait for the review process. Approved listings can be shown to potential buyers.\n\n'
+    f'{premium("payment")} <b>ESCROW-SUPPORTED TRANSACTIONS</b>\n'
+    'When a buyer places an order, the platform guides the payment and escrow process. Supported payment options include Telebirr, Commercial Bank of Ethiopia (CBE), and Bank of Abyssinia. Payment evidence and transaction steps are subject to administrator verification; sending a receipt alone does not mean payment is approved.\n\n'
+    f'{premium("info")} <b>MANAGE YOUR ACTIVITY</b>\n'
+    'After signing in on the website, use your account and dashboard to follow your activity, review orders and transaction updates, manage listings, and access the marketplace features available to your account. The community area and AI assistant can also help you explore the platform.\n\n'
+    f'{premium("support")} <b>NEED HELP?</b>\n'
+    'Choose “Get Support” in this bot or contact our official team: @mr_ebek (Lead Administrator &amp; Escrow Officer) and @EXO_SMM (Operations &amp; Moderation). Never share your password, Telegram login code, or other sensitive account information.\n\n'
+    f'{premium("telegram")} <b>READY TO GET STARTED?</b>\n'
+    'Tap the button below to visit our official website, create an account or sign in, explore the marketplace, and take your next step.\n\n'
+    'Choose an option below. Send /start anytime to return to this menu.'
 )
 
 def render_screen(chat_id, message_id, text, markup):
