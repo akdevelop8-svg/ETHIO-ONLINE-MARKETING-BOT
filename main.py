@@ -1,4 +1,6 @@
 import os
+import re
+import copy
 import logging
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -92,10 +94,58 @@ WELCOME_TEXT = (
     'Choose an option below. Send /start anytime to return to this menu.'
 )
 
+def _without_custom_emoji(text):
+    """Keep HTML formatting but remove custom-emoji entities as a safe fallback."""
+    return re.sub(r'<\\/?tg-emoji\\b[^>]*>', '', text or '')
+
+def _plain_keyboard(markup):
+    """Clone an inline keyboard without custom emoji button icons."""
+    if markup is None:
+        return None
+    safe_markup = copy.deepcopy(markup)
+    for row in getattr(safe_markup, "keyboard", []):
+        for button in row:
+            if hasattr(button, "icon_custom_emoji_id"):
+                button.icon_custom_emoji_id = None
+    return safe_markup
+
+def safe_send_message(chat_id, text, **kwargs):
+    """Try Premium custom emoji first; retry without them if Telegram rejects them."""
+    try:
+        return bot.send_message(chat_id, text, **kwargs)
+    except Exception:
+        if "<tg-emoji" not in (text or "") and not kwargs.get("reply_markup"):
+            raise
+        logging.exception("Premium emoji send failed; retrying with compatible formatting")
+        fallback = dict(kwargs)
+        if "reply_markup" in fallback:
+            fallback["reply_markup"] = _plain_keyboard(fallback["reply_markup"])
+        return bot.send_message(chat_id, _without_custom_emoji(text), **fallback)
+
+def safe_edit_message_text(text, **kwargs):
+    """Try Premium custom emoji first; retry without custom emoji if rejected."""
+    try:
+        return bot.edit_message_text(text, **kwargs)
+    except Exception:
+        if "<tg-emoji" not in (text or "") and not kwargs.get("reply_markup"):
+            raise
+        logging.exception("Premium emoji edit failed; retrying with compatible formatting")
+        fallback = dict(kwargs)
+        if "reply_markup" in fallback:
+            fallback["reply_markup"] = _plain_keyboard(fallback["reply_markup"])
+        return bot.edit_message_text(_without_custom_emoji(text), **fallback)
+
+def safe_reply_to(message, text, **kwargs):
+    try:
+        return bot.reply_to(message, text, **kwargs)
+    except Exception:
+        logging.exception("Premium emoji reply failed; retrying without custom emoji")
+        return bot.reply_to(message, _without_custom_emoji(text), **kwargs)
+
 def render_screen(chat_id, message_id, text, markup):
     if message_id:
         try:
-            bot.edit_message_text(
+            safe_edit_message_text(
                 text, chat_id=chat_id, message_id=message_id,
                 reply_markup=markup, parse_mode="HTML"
             )
@@ -104,10 +154,10 @@ def render_screen(chat_id, message_id, text, markup):
             if "message is not modified" in str(exc).lower():
                 return
             logging.exception("Could not edit menu message; sending a replacement")
-    bot.send_message(chat_id, text, reply_markup=markup)
+    safe_send_message(chat_id, text, reply_markup=markup)
 
 def send_welcome(message):
-    bot.send_message(message.chat.id, WELCOME_TEXT, reply_markup=main_menu())
+    safe_send_message(message.chat.id, WELCOME_TEXT, reply_markup=main_menu())
 
 def services_command(message):
     show_services(message.chat.id)
@@ -219,7 +269,7 @@ def forward_customer_question(message):
     # Telegram only permits private bot messages after the admin opens the bot and presses Start.
     for admin_id in [SUPPORT_ADMIN_ID]:
         try:
-            ticket_message = bot.send_message(admin_id, ticket_text, parse_mode="HTML")
+            ticket_message = safe_send_message(admin_id, ticket_text, parse_mode="HTML")
             if message.content_type != "text":
                 bot.copy_message(
                     chat_id=admin_id, from_chat_id=message.chat.id,
@@ -230,7 +280,7 @@ def forward_customer_question(message):
         except Exception:
             logging.exception("Support ticket delivery failed for admin %s", admin_id)
     if delivered:
-        bot.send_message(
+        safe_send_message(
             message.chat.id,
             f'{premium("accept", "📨") or "📨"} Your question has been received by our support team. '
             "An administrator will reply here as soon as possible."
@@ -249,9 +299,9 @@ def deliver_admin_reply(message):
             chat_id=customer_id, from_chat_id=message.chat.id,
             message_id=message.message_id
         )
-        bot.reply_to(message, f'{premium("accept", "✅") or "✅"} Your reply was delivered to the customer.')
+        safe_reply_to(message, f'{premium("accept")} Your reply was delivered to the customer.')
     except Exception:
-        bot.reply_to(
+        safe_reply_to(
             message,
             "I could not deliver this reply. Check that the customer has not blocked the bot."
         )
