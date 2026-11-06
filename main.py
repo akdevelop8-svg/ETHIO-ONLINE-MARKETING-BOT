@@ -13,29 +13,42 @@ app = Flask(__name__)
 WEBHOOK_PATH = "/api/webhook"
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 
-# General-purpose custom emoji from the existing project emoji collection.
-# Telegram requires the bot owner to have Premium to use custom emoji icons.
-WEBSITE_BUTTON_EMOJI_ID = "5954135079662916434"  # stars
+# General-purpose custom emoji IDs selected from the existing project collection.
+# Telegram requires the bot owner to have Premium for custom emoji in bot messages/buttons.
+EMOJI = {
+    "congrats": "5954135079662916434",  # stars
+    "accept": "6221736233970700254",
+    "cancel": "6224185666704511761",   # reject
+    "back": "5352759161945867747",
+}
+
+WEBSITE_BUTTON_EMOJI_ID = EMOJI["congrats"]
 
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
     greeting_text = (
-        "🌸 <b>Welcome to Ethio Online Marketing!</b> 🎉\n\n"
-        "We are happy to have you here. This bot is your quick gateway to "
-        "our digital marketing services and online resources.\n\n"
-        "🚀 <b>Ready to grow your business?</b>\n"
-        "Explore our website to discover how our marketing solutions can help "
-        "you build your online presence, reach more customers, and take the "
-        "next step toward your business goals.\n\n"
-        "✨ Take a moment to visit us using the blue button below. "
-        "We look forward to being part of your growth journey!\n\n"
-        "💐 <i>Thank you for choosing Ethio Online Marketing.</i>"
+        '<tg-emoji emoji-id="' + EMOJI["congrats"] + '">🎉</tg-emoji> '
+        '<b>Welcome to Ethio Online Marketing!</b> 🌸\n\n'
+        "We are delighted to welcome you! Thank you for choosing "
+        "<b>Ethio Online Marketing</b>. This bot is your easy starting point "
+        "for discovering our digital marketing services and helpful online resources.\n\n"
+        "🚀 <b>Let’s grow your business together!</b>\n"
+        "A strong online presence can help your business reach new people, "
+        "connect with potential customers, and create more opportunities. "
+        "We are here to help you take the next step with confidence.\n\n"
+        "🌐 Visit our website to learn more about what we offer, explore our "
+        "services, and find the information you need. Simply tap the blue "
+        "<b>Visit Our Website</b> button below.\n\n"
+        '<tg-emoji emoji-id="' + EMOJI["accept"] + '">✅</tg-emoji> '
+        "<b>We’re excited to have you with us!</b>\n"
+        "Thank you for being part of our journey. We look forward to supporting "
+        "your growth and success. 💐"
     )
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton(
-        text="🌐 Visit Our Website",
+        text="Visit Our Website",
         url="https://ethio-online-marketing.vercel.app/",
         style="primary",
         icon_custom_emoji_id=WEBSITE_BUTTON_EMOJI_ID
