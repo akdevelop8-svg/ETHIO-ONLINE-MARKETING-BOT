@@ -22,7 +22,7 @@ DEPLOYMENT ON VERCEL
 
 4. Configure the required environment variables in Vercel:
    BOT_TOKEN = your Telegram BotFather token
-   PUBLIC_BASE_URL = https://ethio-online-marketing.vercel.app
+   PUBLIC_BASE_URL = https://ethio-online-marketing-bot.vercel.app
 
 5. Install dependencies from requirements.txt:
    pyTelegramBotAPI==4.37.1
@@ -40,4 +40,4 @@ IMPORTANT SECURITY NOTES
 - If a bot token has ever been exposed, revoke it in BotFather and create
   a new token before adding it to Vercel environment variables.
 - After changing environment variables, redeploy the Vercel project.
-- The official website button in the bot points to the Vercel website URL.
+- The bot's website button points to https://ethio-online-marketing.vercel.app. The Telegram webhook uses the bot deployment URL https://ethio-online-marketing-bot.vercel.app.
