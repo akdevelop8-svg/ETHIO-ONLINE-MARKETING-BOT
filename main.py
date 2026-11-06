@@ -11,6 +11,8 @@ app = Flask(__name__)
 WEBHOOK_PATH = "/api/webhook"
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-marketing-bot.vercel.app").rstrip("/")
 WEBSITE_URL = "https://ethio-online-marketing.vercel.app/"
+ADMIN_IDS = {7176155928, 1894231439}
+ENABLE_PREMIUM_EMOJI = os.environ.get("ENABLE_PREMIUM_EMOJI", "false").lower() == "true"
 
 # General-purpose Telegram Premium custom emoji IDs (no game-specific emoji).
 EMOJI = {
@@ -30,29 +32,23 @@ EMOJI = {
     "telegram": "5866355487255039002",
 }
 
-def premium(key, fallback):
-    """Use standard Unicode emoji so every Telegram user can render the message."""
-    return fallback
-
-BUTTON_EMOJI = {
-    "stars": "✨", "accept": "🤝", "cancel": "❌", "back": "⬅️",
-    "support": "💬", "orders": "🛍️", "info": "ℹ️", "help": "❔",
-    "payment": "🔐", "telebirr": "📱", "dashen": "🏦", "ticket": "🎫",
-    "warning": "⚠️", "telegram": "✈️",
-}
+def premium(key, fallback=""):
+    """Render custom emoji only after the bot owner has Premium and enables it."""
+    emoji_id = EMOJI.get(key)
+    if ENABLE_PREMIUM_EMOJI and emoji_id:
+        return f'<tg-emoji emoji-id="{emoji_id}">{fallback or " "}</tg-emoji>'
+    return ""
 
 def make_button(text, emoji_key=None, callback_data=None, url=None, style=None):
-    # Keep the keyboard compatible: use ordinary emoji in button text rather
-    # than Premium-only custom emoji icons or newer button-style parameters.
-    if emoji_key:
-        emoji = BUTTON_EMOJI.get(emoji_key, "")
-        if emoji:
-            text = f"{emoji} {text}"
     kwargs = {"text": text}
     if callback_data:
         kwargs["callback_data"] = callback_data
     if url:
         kwargs["url"] = url
+    if style in {"primary", "success", "danger"}:
+        kwargs["style"] = style
+    if ENABLE_PREMIUM_EMOJI and emoji_key and EMOJI.get(emoji_key):
+        kwargs["icon_custom_emoji_id"] = EMOJI[emoji_key]
     return InlineKeyboardButton(**kwargs)
 
 def main_menu():
@@ -77,7 +73,7 @@ def back_menu():
 
 WELCOME_TEXT = (
     f'{premium("stars", "✨")} <b>WELCOME TO ETHIO ONLINE MARKET!</b>\n'
-    '<i>Your trusted marketplace for discovering, buying, and selling Ethiopian social-media assets with escrow-supported transactions.</i> 🌸\n\n'
+    '<i>Your trusted marketplace for discovering, buying, and selling Ethiopian social-media assets with escrow-supported transactions.</i>\n\n'
     'Welcome! Ethio Online Market (EOM) connects buyers and sellers of social-media channels and accounts. Browse available listings, compare details, or publish your own listing and reach interested buyers.\n\n'
     f'{premium("orders", "🛍️")} <b>BUY & EXPLORE</b>\n'
     'Discover YouTube channels, TikTok accounts, Telegram channels, Instagram pages, Facebook pages, and X (Twitter) accounts. Review listing details, audience size, engagement information, category, and asking price before choosing what fits your goals.\n\n'
@@ -125,10 +121,10 @@ def show_services(chat_id):
 def show_how_it_works(chat_id):
     text = (
         f'{premium("info", "ℹ️")} <b>HOW IT WORKS</b>\n\n'
-        f'{premium("accept", "1️⃣")} <b>Explore:</b> Open our website and review the information.\n'
-        f'{premium("accept", "2️⃣")} <b>Decide:</b> Choose the service or option that fits your goal.\n'
-        f'{premium("accept", "3️⃣")} <b>Connect:</b> Contact us through this bot if you need guidance.\n'
-        f'{premium("stars", "4️⃣")} <b>Get started:</b> Follow the instructions shared by our team.\n\n'
+        f'{premium("accept", "1.")} <b>Explore:</b> Open our website and review the information.\n'
+        f'{premium("accept", "2.")} <b>Decide:</b> Choose the service or option that fits your goal.\n'
+        f'{premium("accept", "3.")} <b>Connect:</b> Contact us through this bot if you need guidance.\n'
+        f'{premium("stars", "4.")} <b>Get started:</b> Follow the instructions shared by our team.\n\n'
         'Simple, clear, and one step at a time. We are here to help you find your way.'
     )
     bot.send_message(chat_id, text, reply_markup=back_menu())
@@ -170,10 +166,84 @@ def handle_menu_callback(call):
     elif call.data == "help":
         show_help(chat_id)
 
+def _ticket_customer_id(message):
+    if not message or not getattr(message, "text", None):
+        return None
+    import re
+    match = re.search(r"Customer ID: (\\d+)", message.text)
+    return int(match.group(1)) if match else None
+
+def _is_admin_ticket_reply(message):
+    return bool(
+        message and message.chat and message.chat.id in ADMIN_IDS
+        and message.reply_to_message and _ticket_customer_id(message.reply_to_message)
+    )
+
+def forward_customer_question(message):
+    customer = message.from_user
+    customer_name = " ".join(part for part in [customer.first_name, customer.last_name] if part)
+    username = f"@{customer.username}" if customer.username else "Not set"
+    ticket_id = f"{message.chat.id}-{message.message_id}"
+    content = (message.text or message.caption or "").strip()
+    if not content:
+        content = f"[{message.content_type} message]"
+    import html
+    ticket_text = (
+        "<b>NEW CUSTOMER SUPPORT REQUEST</b>\\n"
+        f"<b>Ticket:</b> <code>{ticket_id}</code>\\n"
+        f"<b>Name:</b> {html.escape(customer_name or 'Customer')}\\n"
+        f"<b>Username:</b> {html.escape(username)}\\n"
+        f"<b>Customer ID:</b> <code>{message.chat.id}</code>\\n\\n"
+        "<b>Question:</b>\\n"
+        f"{html.escape(content[:2500])}\\n\\n"
+        "<i>Reply directly to THIS ticket message to send your answer to this customer only.</i>"
+    )
+    delivered = 0
+    for admin_id in ADMIN_IDS:
+        try:
+            ticket_message = bot.send_message(admin_id, ticket_text, parse_mode="HTML")
+            if message.content_type != "text":
+                bot.copy_message(
+                    chat_id=admin_id, from_chat_id=message.chat.id,
+                    message_id=message.message_id,
+                    reply_to_message_id=ticket_message.message_id
+                )
+            delivered += 1
+        except Exception:
+            continue
+    if delivered:
+        bot.send_message(
+            message.chat.id,
+            "Your question has been received by our support team. "
+            "An administrator will reply here as soon as possible."
+        )
+    else:
+        bot.send_message(
+            message.chat.id,
+            "Your message could not be delivered to our support team yet. "
+            "Please try again shortly."
+        )
+
+def deliver_admin_reply(message):
+    customer_id = _ticket_customer_id(message.reply_to_message)
+    try:
+        bot.copy_message(
+            chat_id=customer_id, from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )
+        bot.reply_to(message, "Your reply was delivered to the customer.")
+    except Exception:
+        bot.reply_to(
+            message,
+            "I could not deliver this reply. Check that the customer has not blocked the bot."
+        )
+
 if bot:
     bot.message_handler(commands=["start"])(send_welcome)
     bot.message_handler(commands=["services"])(services_command)
     bot.message_handler(commands=["help"])(help_command)
+    bot.message_handler(func=_is_admin_ticket_reply, content_types=["text", "photo", "video", "document", "audio", "voice", "animation", "sticker", "video_note"])(deliver_admin_reply)
+    bot.message_handler(func=lambda message: message.chat.type == "private" and message.chat.id not in ADMIN_IDS, content_types=["text", "photo", "video", "document", "audio", "voice", "animation", "sticker", "video_note"])(forward_customer_question)
     bot.callback_query_handler(func=lambda call: call.data in {"main_menu", "services", "how_it_works", "support", "help"})(handle_menu_callback)
 
 @app.get("/")
