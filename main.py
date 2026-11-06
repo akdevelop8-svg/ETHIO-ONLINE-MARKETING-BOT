@@ -4,10 +4,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from flask import Flask, request, jsonify
 
 TOKEN = os.environ.get("BOT_TOKEN")
-if not TOKEN:
-    raise RuntimeError("BOT_TOKEN environment variable is missing.")
-
-bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
+# Keep health checks available before BOT_TOKEN is configured.
+bot = telebot.TeleBot(TOKEN, parse_mode="HTML") if TOKEN else None
 app = Flask(__name__)
 
 WEBHOOK_PATH = "/api/webhook"
@@ -90,15 +88,12 @@ WELCOME_TEXT = (
     'You can return to this menu anytime by sending /start.'
 )
 
-@bot.message_handler(commands=["start"])
 def send_welcome(message):
     bot.send_message(message.chat.id, WELCOME_TEXT, reply_markup=main_menu())
 
-@bot.message_handler(commands=["services"])
 def services_command(message):
     show_services(message.chat.id)
 
-@bot.message_handler(commands=["help"])
 def help_command(message):
     show_help(message.chat.id)
 
@@ -151,9 +146,6 @@ def show_help(chat_id):
     )
     bot.send_message(chat_id, text, reply_markup=back_menu())
 
-@bot.callback_query_handler(func=lambda call: call.data in {
-    "main_menu", "services", "how_it_works", "support", "help"
-})
 def handle_menu_callback(call):
     bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
@@ -168,18 +160,28 @@ def handle_menu_callback(call):
     elif call.data == "help":
         show_help(chat_id)
 
+if bot:
+    bot.message_handler(commands=["start"])(send_welcome)
+    bot.message_handler(commands=["services"])(services_command)
+    bot.message_handler(commands=["help"])(help_command)
+    bot.callback_query_handler(func=lambda call: call.data in {"main_menu", "services", "how_it_works", "support", "help"})(handle_menu_callback)
+
 @app.get("/")
 def home():
     return "Ethio Online Marketing bot is running!", 200
 
 @app.post(WEBHOOK_PATH)
 def telegram_webhook():
+    if not bot:
+        return jsonify({"ok": False, "error": "BOT_TOKEN is not configured"}), 503
     update = telebot.types.Update.de_json(request.get_data().decode("utf-8"))
     bot.process_new_updates([update])
     return "OK", 200
 
 @app.get("/api/set-webhook")
 def set_webhook():
+    if not bot:
+        return jsonify({"ok": False, "error": "BOT_TOKEN is not configured"}), 503
     if not PUBLIC_BASE_URL:
         return jsonify({"ok": False, "error": "PUBLIC_BASE_URL is missing"}), 500
     webhook_url = PUBLIC_BASE_URL + WEBHOOK_PATH
@@ -188,6 +190,8 @@ def set_webhook():
 
 @app.get("/api/webhook-info")
 def webhook_info():
+    if not bot:
+        return jsonify({"ok": False, "error": "BOT_TOKEN is not configured"}), 503
     info = bot.get_webhook_info()
     return jsonify({
         "url": info.url,
