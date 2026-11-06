@@ -70,20 +70,22 @@ def back_menu():
     return markup
 
 WELCOME_TEXT = (
-    f'{premium("stars", "✨")} <b>WELCOME TO ETHIO ONLINE MARKETING!</b>\\n'
-    '<i>Your trusted starting point for building a stronger digital presence and discovering new online opportunities.</i> 🌸\\n\\n'
-    'Welcome! We are delighted to have you here. Ethio Online Marketing is here to make it easier for you to explore digital services, understand your options, and take confident steps toward your online goals. Whether you are a new visitor or returning to continue your journey, this bot will help you find the right information.\\n\\n'
-    f'{premium("accept", "✅")} <b>DISCOVER WHAT YOU NEED</b>\\n'
-    'Explore the available services, learn how they work, and find useful information before making your next decision.\\n\\n'
-    f'{premium("orders", "🛍️")} <b>EXPLORE YOUR OPTIONS</b>\\n'
-    'Choose the service or information that best matches your needs. Visit our official website for the latest details, service descriptions, and available opportunities.\\n\\n'
-    f'{premium("info", "ℹ️")} <b>GET CLEAR GUIDANCE</b>\\n'
-    'Not sure where to begin? Select “How It Works” to understand the simple steps, or open “FAQs & Help” for quick answers to common questions.\\n\\n'
-    f'{premium("support", "💬")} <b>WE ARE HERE TO SUPPORT YOU</b>\\n'
-    'If you have a question or need assistance, choose “Get Support” and send us a message. Tell us what you are looking for so our team can guide you to the next step.\\n\\n'
-    f'{premium("stars", "🌟")} <b>START YOUR ONLINE JOURNEY TODAY!</b>\\n'
-    'Explore, learn, and move forward one step at a time. Thank you for choosing Ethio Online Marketing. We appreciate your trust and look forward to helping you discover new possibilities.\\n\\n'
-    '<b>Choose an option below to get started.</b> You can return to this main menu anytime by sending /start.'
+    f'{premium("stars", "✨")} <b>WELCOME TO ETHIO ONLINE MARKET!</b>\n'
+    '<i>Your trusted marketplace for discovering, buying, and selling Ethiopian social-media assets with escrow-supported transactions.</i> 🌸\n\n'
+    'Welcome! Ethio Online Market (EOM) connects buyers and sellers of social-media channels and accounts. Browse available listings, compare details, or publish your own listing and reach interested buyers.\n\n'
+    f'{premium("orders", "🛍️")} <b>BUY & EXPLORE</b>\n'
+    'Discover YouTube channels, TikTok accounts, Telegram channels, Instagram pages, Facebook pages, and X (Twitter) accounts. Review listing details, audience size, engagement information, category, and asking price before choosing what fits your goals.\n\n'
+    f'{premium("accept", "🤝")} <b>SELL YOUR SOCIAL-MEDIA ASSET</b>\n'
+    'Have a channel or account you want to sell? Create an account on our website, submit your listing with the required details and ownership/analytics evidence, and wait for the review process. Approved listings can be shown to potential buyers.\n\n'
+    f'{premium("payment", "🔐")} <b>ESCROW-SUPPORTED TRANSACTIONS</b>\n'
+    'When a buyer places an order, the platform guides the payment and escrow process. Supported payment options include Telebirr, Commercial Bank of Ethiopia (CBE), and Bank of Abyssinia. Payment evidence and transaction steps are subject to administrator verification; sending a receipt alone does not mean payment is approved.\n\n'
+    f'{premium("info", "📊")} <b>MANAGE YOUR ACTIVITY</b>\n'
+    'After signing in on the website, use your account and dashboard to follow your activity, review orders and transaction updates, manage listings, and access the marketplace features available to your account. The community area and AI assistant can also help you explore the platform.\n\n'
+    f'{premium("support", "💬")} <b>NEED HELP?</b>\n'
+    'Choose “Get Support” in this bot or contact our official team: @mr_ebek (Lead Administrator & Escrow Officer) and @EXO_SMM (Operations & Moderation). Never share your password, Telegram login code, or other sensitive account information.\n\n'
+    f'{premium("stars", "🚀")} <b>READY TO GET STARTED?</b>\n'
+    'Tap the button below to visit our official website, create an account or sign in, explore the marketplace, and take your next step.\n\n'
+    '<b>Choose an option below.</b> Send /start anytime to return to this menu.'
 )
 
 def send_welcome(message):
@@ -97,15 +99,19 @@ def help_command(message):
 
 def show_services(chat_id):
     text = (
-        f'{premium("orders", "🛍️")} <b>EXPLORE OUR SERVICES</b>\n\n'
-        'Visit our official website to see the latest information about our '
-        'services, available options, and how to get started. If you already '
-        'have a goal in mind, send us a message here and tell us what you need.\n\n'
-        f'{premium("info", "ℹ️")} <i>For accurate details and current offers, '
-        'please check the website.</i>'
+        f'{premium("orders", "🛍️")} <b>ETHIO ONLINE MARKETPLACE</b>\n\n'
+        '<b>1. Buy social-media channels and accounts</b>\n'
+        'Browse listings for YouTube, TikTok, Telegram, Instagram, Facebook, and X (Twitter). Compare audience details, category, listing information, and price.\n\n'
+        '<b>2. Sell your channel or account</b>\n'
+        'Register or sign in on the website, submit your listing and supporting ownership/analytics information, and follow the review process.\n\n'
+        '<b>3. Escrow-supported orders</b>\n'
+        'Follow the order and payment steps. Supported methods include Telebirr, CBE, and Bank of Abyssinia. An administrator must verify payment evidence before it is treated as approved.\n\n'
+        '<b>4. Account and marketplace tools</b>\n'
+        'Use your dashboard to follow listings, orders, and transaction updates. Explore the community and AI assistant on the website.\n\n'
+        f'{premium("info", "ℹ️")} <i>Open the official website for current listings, full details, registration, and available features.</i>'
     )
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(make_button("View Services on Website", "stars", url=WEBSITE_URL, style="primary"))
+    markup.add(make_button("Open Official Website", "stars", url=WEBSITE_URL, style="primary"))
     markup.add(make_button("Ask a Question", "support", callback_data="support", style="success"))
     markup.add(make_button("Back to Main Menu", "back", callback_data="main_menu"))
     bot.send_message(chat_id, text, reply_markup=markup)
