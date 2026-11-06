@@ -96,7 +96,7 @@ WELCOME_TEXT = (
 
 def _without_custom_emoji(text):
     """Keep HTML formatting but remove custom-emoji entities as a safe fallback."""
-    return re.sub(r'<\\/?tg-emoji\\b[^>]*>', '', text or '')
+    return re.sub(r'</?tg-emoji\b[^>]*>', '', text or '')
 
 def _plain_keyboard(markup):
     """Clone an inline keyboard without custom emoji button icons."""
@@ -256,7 +256,7 @@ def forward_customer_question(message):
         content = f"[{message.content_type} message]"
     import html
     ticket_text = (
-        f'{premium("ticket", "🎫") or "🎫"} <b>NEW CUSTOMER SUPPORT REQUEST</b>\n'
+        f'{premium("ticket")} <b>NEW CUSTOMER SUPPORT REQUEST</b>\n'
         f"<b>Ticket:</b> <code>{ticket_id}</code>\n"
         f"<b>Name:</b> {html.escape(customer_name or 'Customer')}\n"
         f"<b>Username:</b> {html.escape(username)}\n"
@@ -282,11 +282,11 @@ def forward_customer_question(message):
     if delivered:
         safe_send_message(
             message.chat.id,
-            f'{premium("accept", "📨") or "📨"} Your question has been received by our support team. '
+            f'{premium("accept")} Your question has been received by our support team. '
             "An administrator will reply here as soon as possible."
         )
     else:
-        bot.send_message(
+        safe_send_message(
             message.chat.id,
             "Your message could not be delivered to our support team yet. "
             "Please try again shortly."
