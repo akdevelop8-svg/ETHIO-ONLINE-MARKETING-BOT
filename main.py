@@ -14,7 +14,7 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-market
 WEBSITE_URL = "https://ethio-online-marketing.vercel.app/"
 SUPPORT_ADMIN_ID = int(os.environ.get("SUPPORT_ADMIN_ID", "7176155928"))
 ADMIN_IDS = {SUPPORT_ADMIN_ID, 1894231439}
-ENABLE_PREMIUM_EMOJI = os.environ.get("ENABLE_PREMIUM_EMOJI", "true").lower() == "true"
+ENABLE_PREMIUM_EMOJI = True  # Required: bot owner must have Telegram Premium
 
 # General-purpose Telegram Premium custom emoji IDs (no game-specific emoji).
 EMOJI = {
