@@ -9,7 +9,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML") if TOKEN else None
 app = Flask(__name__)
 
 WEBHOOK_PATH = "/api/webhook"
-PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-marketing.vercel.app").rstrip("/")
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-marketing-bot.vercel.app").rstrip("/")
 WEBSITE_URL = "https://ethio-online-marketing.vercel.app/"
 
 # General-purpose Telegram Premium custom emoji IDs (no game-specific emoji).
