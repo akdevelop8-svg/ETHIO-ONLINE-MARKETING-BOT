@@ -170,7 +170,7 @@ def _ticket_customer_id(message):
     if not message or not getattr(message, "text", None):
         return None
     import re
-    match = re.search(r"Customer ID: (\\d+)", message.text)
+    match = re.search(r"Customer ID: (\d+)", message.text)
     return int(match.group(1)) if match else None
 
 def _is_admin_ticket_reply(message):
@@ -189,13 +189,13 @@ def forward_customer_question(message):
         content = f"[{message.content_type} message]"
     import html
     ticket_text = (
-        "<b>NEW CUSTOMER SUPPORT REQUEST</b>\\n"
-        f"<b>Ticket:</b> <code>{ticket_id}</code>\\n"
-        f"<b>Name:</b> {html.escape(customer_name or 'Customer')}\\n"
-        f"<b>Username:</b> {html.escape(username)}\\n"
-        f"<b>Customer ID:</b> <code>{message.chat.id}</code>\\n\\n"
-        "<b>Question:</b>\\n"
-        f"{html.escape(content[:2500])}\\n\\n"
+        "<b>NEW CUSTOMER SUPPORT REQUEST</b>\n"
+        f"<b>Ticket:</b> <code>{ticket_id}</code>\n"
+        f"<b>Name:</b> {html.escape(customer_name or 'Customer')}\n"
+        f"<b>Username:</b> {html.escape(username)}\n"
+        f"<b>Customer ID:</b> <code>{message.chat.id}</code>\n\n"
+        "<b>Question:</b>\n"
+        f"{html.escape(content[:2500])}\n\n"
         "<i>Reply directly to THIS ticket message to send your answer to this customer only.</i>"
     )
     delivered = 0
