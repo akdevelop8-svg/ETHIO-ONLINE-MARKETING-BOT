@@ -32,7 +32,7 @@ A Telegram bot for **Ethio Online Marketing**. It helps visitors explore service
    | Name | Value |
    | --- | --- |
    | `BOT_TOKEN` | Your Telegram BotFather token |
-   | `PUBLIC_BASE_URL` | `https://ethio-online-marketing.vercel.app` |
+   | `PUBLIC_BASE_URL` | `https://ethio-online-marketing-bot.vercel.app` |
 
 5. Deploy or redeploy the project.
 6. Register the Telegram webhook by opening:
