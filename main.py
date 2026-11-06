@@ -43,7 +43,11 @@ def send_welcome(message):
         '<tg-emoji emoji-id="' + EMOJI["accept"] + '">✅</tg-emoji> '
         "<b>We’re excited to have you with us!</b>\n"
         "Thank you for being part of our journey. We look forward to supporting "
-        "your growth and success. 💐"
+        "your growth and success. 💐\n\n"
+        '<tg-emoji emoji-id="' + EMOJI["back"] + '">↩️</tg-emoji> '
+        "You can send /start again whenever you want to return here.\n"
+        '<tg-emoji emoji-id="' + EMOJI["cancel"] + '">❌</tg-emoji> '
+        "You can cancel an action whenever you no longer want to continue."
     )
 
     markup = InlineKeyboardMarkup()
