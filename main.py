@@ -56,21 +56,21 @@ def make_button(text, emoji_key=None, callback_data=None, url=None, style=None):
 def main_menu():
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
-        make_button("Explore Services", "orders", callback_data="services", style="primary"),
-        make_button("How It Works", "info", callback_data="how_it_works", style="primary"),
+        make_button("🛍️ Explore Services", "orders", callback_data="services", style="primary"),
+        make_button("📘 How It Works", "info", callback_data="how_it_works", style="danger"),
     )
     markup.add(
-        make_button("Get Support", "support", callback_data="support", style="success"),
-        make_button("FAQs & Help", "help", callback_data="help"),
+        make_button("💬 Get Support", "support", callback_data="support", style="success"),
+        make_button("❔ FAQs & Help", "help", callback_data="help"),
     )
     markup.add(
-        make_button("Visit Our Website", "stars", url=WEBSITE_URL, style="primary")
+        make_button("🌐 Visit Our Website", "stars", url=WEBSITE_URL)
     )
     return markup
 
 def back_menu():
     markup = InlineKeyboardMarkup()
-    markup.add(make_button("Back to Main Menu", "back", callback_data="main_menu"))
+    markup.add(make_button("↩️ Back to Main Menu", "back", callback_data="main_menu", style="danger"))
     return markup
 
 WELCOME_TEXT = (
@@ -129,8 +129,8 @@ def show_services(chat_id, message_id=None):
         f'{premium("info", "ℹ️")} <i>Open the official website for current listings, full details, registration, and available features.</i>'
     )
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(make_button("Open Official Website", "stars", url=WEBSITE_URL, style="primary"))
-    markup.add(make_button("Ask a Question", "support", callback_data="support", style="success"))
+    markup.add(make_button("🌐 Open Official Website", "stars", url=WEBSITE_URL, style="primary"))
+    markup.add(make_button("💬 Ask a Question", "support", callback_data="support", style="success"))
     markup.add(make_button("Back to Main Menu", "back", callback_data="main_menu"))
     render_screen(chat_id, message_id, text, markup)
 
@@ -206,7 +206,7 @@ def forward_customer_question(message):
         content = f"[{message.content_type} message]"
     import html
     ticket_text = (
-        "<b>NEW CUSTOMER SUPPORT REQUEST</b>\n"
+        f'{premium("ticket", "🎫") or "🎫"} <b>NEW CUSTOMER SUPPORT REQUEST</b>\n'
         f"<b>Ticket:</b> <code>{ticket_id}</code>\n"
         f"<b>Name:</b> {html.escape(customer_name or 'Customer')}\n"
         f"<b>Username:</b> {html.escape(username)}\n"
@@ -232,7 +232,7 @@ def forward_customer_question(message):
     if delivered:
         bot.send_message(
             message.chat.id,
-            "Your question has been received by our support team. "
+            f'{premium("accept", "📨") or "📨"} Your question has been received by our support team. '
             "An administrator will reply here as soon as possible."
         )
     else:
@@ -249,7 +249,7 @@ def deliver_admin_reply(message):
             chat_id=customer_id, from_chat_id=message.chat.id,
             message_id=message.message_id
         )
-        bot.reply_to(message, "Your reply was delivered to the customer.")
+        bot.reply_to(message, f'{premium("accept", "✅") or "✅"} Your reply was delivered to the customer.')
     except Exception:
         bot.reply_to(
             message,
