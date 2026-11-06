@@ -13,21 +13,32 @@ app = Flask(__name__)
 WEBHOOK_PATH = "/api/webhook"
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 
+# General-purpose custom emoji from the existing project emoji collection.
+# Telegram requires the bot owner to have Premium to use custom emoji icons.
+WEBSITE_BUTTON_EMOJI_ID = "5954135079662916434"  # stars
+
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
     greeting_text = (
-        "📣 Hello and welcome to <b>Ethio Online Marketing</b>!\n\n"
-        "👀 This bot is designed to help you elevate your digital marketing "
-        "strategy and easily access valuable resources. We are thrilled to have you here!\n\n"
-        "💰 Utilize our services to grow your business and maximize your profits!\n\n"
-        "🚨 To explore our services in detail and visit our website, simply tap the button below."
+        "🌸 <b>Welcome to Ethio Online Marketing!</b> 🎉\n\n"
+        "We are happy to have you here. This bot is your quick gateway to "
+        "our digital marketing services and online resources.\n\n"
+        "🚀 <b>Ready to grow your business?</b>\n"
+        "Explore our website to discover how our marketing solutions can help "
+        "you build your online presence, reach more customers, and take the "
+        "next step toward your business goals.\n\n"
+        "✨ Take a moment to visit us using the blue button below. "
+        "We look forward to being part of your growth journey!\n\n"
+        "💐 <i>Thank you for choosing Ethio Online Marketing.</i>"
     )
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton(
         text="🌐 Visit Our Website",
-        url="https://ethio-online-marketing-bot-qvm8.vercel.app"
+        url="https://ethio-online-marketing.vercel.app/",
+        style="primary",
+        icon_custom_emoji_id=WEBSITE_BUTTON_EMOJI_ID
     ))
     bot.send_message(message.chat.id, greeting_text, reply_markup=markup)
 
