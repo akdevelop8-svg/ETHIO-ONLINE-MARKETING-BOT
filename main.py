@@ -1,4 +1,5 @@
 import os
+import logging
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from flask import Flask, request, jsonify
@@ -11,7 +12,8 @@ app = Flask(__name__)
 WEBHOOK_PATH = "/api/webhook"
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-marketing-bot.vercel.app").rstrip("/")
 WEBSITE_URL = "https://ethio-online-marketing.vercel.app/"
-ADMIN_IDS = {7176155928, 1894231439}
+SUPPORT_ADMIN_ID = int(os.environ.get("SUPPORT_ADMIN_ID", "7176155928"))
+ADMIN_IDS = {SUPPORT_ADMIN_ID, 1894231439}
 ENABLE_PREMIUM_EMOJI = os.environ.get("ENABLE_PREMIUM_EMOJI", "false").lower() == "true"
 
 # General-purpose Telegram Premium custom emoji IDs (no game-specific emoji).
@@ -90,6 +92,20 @@ WELCOME_TEXT = (
     '<b>Choose an option below.</b> Send /start anytime to return to this menu.'
 )
 
+def render_screen(chat_id, message_id, text, markup):
+    if message_id:
+        try:
+            bot.edit_message_text(
+                text, chat_id=chat_id, message_id=message_id,
+                reply_markup=markup, parse_mode="HTML"
+            )
+            return
+        except Exception as exc:
+            if "message is not modified" in str(exc).lower():
+                return
+            logging.exception("Could not edit menu message; sending a replacement")
+    bot.send_message(chat_id, text, reply_markup=markup)
+
 def send_welcome(message):
     bot.send_message(message.chat.id, WELCOME_TEXT, reply_markup=main_menu())
 
@@ -99,7 +115,7 @@ def services_command(message):
 def help_command(message):
     show_help(message.chat.id)
 
-def show_services(chat_id):
+def show_services(chat_id, message_id=None):
     text = (
         f'{premium("orders", "🛍️")} <b>ETHIO ONLINE MARKETPLACE</b>\n\n'
         '<b>1. Buy social-media channels and accounts</b>\n'
@@ -116,9 +132,9 @@ def show_services(chat_id):
     markup.add(make_button("Open Official Website", "stars", url=WEBSITE_URL, style="primary"))
     markup.add(make_button("Ask a Question", "support", callback_data="support", style="success"))
     markup.add(make_button("Back to Main Menu", "back", callback_data="main_menu"))
-    bot.send_message(chat_id, text, reply_markup=markup)
+    render_screen(chat_id, message_id, text, markup)
 
-def show_how_it_works(chat_id):
+def show_how_it_works(chat_id, message_id=None):
     text = (
         f'{premium("info", "ℹ️")} <b>HOW IT WORKS</b>\n\n'
         f'{premium("accept", "1.")} <b>Explore:</b> Open our website and review the information.\n'
@@ -127,9 +143,9 @@ def show_how_it_works(chat_id):
         f'{premium("stars", "4.")} <b>Get started:</b> Follow the instructions shared by our team.\n\n'
         'Simple, clear, and one step at a time. We are here to help you find your way.'
     )
-    bot.send_message(chat_id, text, reply_markup=back_menu())
+    render_screen(chat_id, message_id, text, back_menu())
 
-def show_support(chat_id):
+def show_support(chat_id, message_id=None):
     text = (
         f'{premium("support", "💬")} <b>WE’RE HERE TO HELP</b>\n\n'
         'Tell us what you need help with by sending your question in this chat. '
@@ -139,9 +155,9 @@ def show_support(chat_id):
         'codes, or other sensitive account information.</i>\n\n'
         'Our team can review your message and guide you on the next step.'
     )
-    bot.send_message(chat_id, text, reply_markup=back_menu())
+    render_screen(chat_id, message_id, text, back_menu())
 
-def show_help(chat_id):
+def show_help(chat_id, message_id=None):
     text = (
         f'{premium("help", "❔")} <b>QUICK HELP & FAQ</b>\n\n'
         '<b>How do I start?</b> Send /start to open the main menu.\n\n'
@@ -150,21 +166,22 @@ def show_help(chat_id):
         '<b>How do I return to the menu?</b> Send /start at any time.\n\n'
         f'{premium("warning", "⚠️")} Never share your password or Telegram login code.'
     )
-    bot.send_message(chat_id, text, reply_markup=back_menu())
+    render_screen(chat_id, message_id, text, back_menu())
 
 def handle_menu_callback(call):
     bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
+    message_id = call.message.message_id
     if call.data == "main_menu":
-        bot.send_message(chat_id, WELCOME_TEXT, reply_markup=main_menu())
+        render_screen(chat_id, message_id, WELCOME_TEXT, main_menu())
     elif call.data == "services":
-        show_services(chat_id)
+        show_services(chat_id, message_id)
     elif call.data == "how_it_works":
-        show_how_it_works(chat_id)
+        show_how_it_works(chat_id, message_id)
     elif call.data == "support":
-        show_support(chat_id)
+        show_support(chat_id, message_id)
     elif call.data == "help":
-        show_help(chat_id)
+        show_help(chat_id, message_id)
 
 def _ticket_customer_id(message):
     if not message or not getattr(message, "text", None):
@@ -199,7 +216,8 @@ def forward_customer_question(message):
         "<i>Reply directly to THIS ticket message to send your answer to this customer only.</i>"
     )
     delivered = 0
-    for admin_id in ADMIN_IDS:
+    # Telegram only permits private bot messages after the admin opens the bot and presses Start.
+    for admin_id in [SUPPORT_ADMIN_ID]:
         try:
             ticket_message = bot.send_message(admin_id, ticket_text, parse_mode="HTML")
             if message.content_type != "text":
@@ -210,7 +228,7 @@ def forward_customer_question(message):
                 )
             delivered += 1
         except Exception:
-            continue
+            logging.exception("Support ticket delivery failed for admin %s", admin_id)
     if delivered:
         bot.send_message(
             message.chat.id,
@@ -243,7 +261,15 @@ if bot:
     bot.message_handler(commands=["services"])(services_command)
     bot.message_handler(commands=["help"])(help_command)
     bot.message_handler(func=_is_admin_ticket_reply, content_types=["text", "photo", "video", "document", "audio", "voice", "animation", "sticker", "video_note"])(deliver_admin_reply)
-    bot.message_handler(func=lambda message: message.chat.type == "private" and message.chat.id not in ADMIN_IDS, content_types=["text", "photo", "video", "document", "audio", "voice", "animation", "sticker", "video_note"])(forward_customer_question)
+    customer_content_types = [
+        "text", "photo", "video", "document", "audio", "voice",
+        "animation", "sticker", "video_note", "location", "contact",
+        "venue", "poll", "dice"
+    ]
+    bot.message_handler(
+        func=lambda message: message.chat.type == "private" and message.chat.id not in ADMIN_IDS,
+        content_types=customer_content_types
+    )(forward_customer_question)
     bot.callback_query_handler(func=lambda call: call.data in {"main_menu", "services", "how_it_works", "support", "help"})(handle_menu_callback)
 
 @app.get("/")
