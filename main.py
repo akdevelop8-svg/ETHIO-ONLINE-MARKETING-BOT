@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 
 TOKEN = os.environ.get("BOT_TOKEN")
 # Keep health checks available before BOT_TOKEN is configured.
-bot = telebot.TeleBot(TOKEN, parse_mode="HTML") if TOKEN else None
+bot = telebot.TeleBot(TOKEN, parse_mode="HTML", threaded=False) if TOKEN else None
 app = Flask(__name__)
 
 WEBHOOK_PATH = "/api/webhook"
