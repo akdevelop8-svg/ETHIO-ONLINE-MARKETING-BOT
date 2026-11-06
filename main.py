@@ -156,6 +156,19 @@ def render_screen(chat_id, message_id, text, markup):
             logging.exception("Could not edit menu message; sending a replacement")
     safe_send_message(chat_id, text, reply_markup=markup)
 
+def capture_premium_emoji_ids(message):
+    """Admin-only helper: report actual custom emoji IDs from a sent Premium emoji."""
+    found = []
+    for entity in (getattr(message, "entities", None) or []):
+        if getattr(entity, "type", None) == "custom_emoji":
+            emoji_id = getattr(entity, "custom_emoji_id", None)
+            if emoji_id and emoji_id not in found:
+                found.append(emoji_id)
+    if found:
+        safe_send_message(message.chat.id, "Detected Premium custom emoji IDs:\n" + "\\n".join(found))
+    else:
+        safe_send_message(message.chat.id, "No Premium custom emoji entity detected. Send a Premium emoji directly from the bot owner's account.")
+
 def send_welcome(message):
     safe_send_message(message.chat.id, WELCOME_TEXT, reply_markup=main_menu())
 
@@ -307,6 +320,7 @@ def deliver_admin_reply(message):
         )
 
 if bot:
+    bot.message_handler(func=lambda message: message.chat.type == "private" and message.chat.id in ADMIN_IDS and any(getattr(entity, "type", None) == "custom_emoji" for entity in (getattr(message, "entities", None) or [])), content_types=["text"])(capture_premium_emoji_ids)
     bot.message_handler(commands=["start"])(send_welcome)
     bot.message_handler(commands=["services"])(services_command)
     bot.message_handler(commands=["help"])(help_command)
