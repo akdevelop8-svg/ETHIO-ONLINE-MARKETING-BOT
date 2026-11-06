@@ -9,7 +9,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML") if TOKEN else None
 app = Flask(__name__)
 
 WEBHOOK_PATH = "/api/webhook"
-PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://ethio-online-marketing.vercel.app").rstrip("/")
 WEBSITE_URL = "https://ethio-online-marketing.vercel.app/"
 
 # General-purpose Telegram Premium custom emoji IDs (no game-specific emoji).
@@ -70,22 +70,20 @@ def back_menu():
     return markup
 
 WELCOME_TEXT = (
-    f'{premium("stars", "✨")} <b>WELCOME TO ETHIO ONLINE MARKETING!</b>\n'
-    '<i>Your next step towards a stronger digital presence starts here.</i> 🌸\n\n'
-    'We are happy to have you with us! Whether you are discovering us for the '
-    'first time or coming back to explore more, this is your simple starting '
-    'point for learning about Ethio Online Marketing.\n\n'
-    f'{premium("accept", "✅")} <b>Discover</b> — explore our website and learn more '
-    'about the services and opportunities available.\n'
-    f'{premium("orders", "🛍️")} <b>Choose</b> — find the information that matches '
-    'your goals and what you want to achieve online.\n'
-    f'{premium("support", "💬")} <b>Connect</b> — need a hand? Use the support '
-    'option and tell us what you are looking for.\n\n'
-    '🚀 <b>Let’s make your online journey count!</b> A clear goal is a great '
-    'place to start. We are excited to help you take the next step, discover '
-    'new possibilities, and move forward with confidence.\n\n'
-    f'{premium("stars", "🌟")} <b>Choose an option below to get started.</b> '
-    'You can return to this menu anytime by sending /start.'
+    f'{premium("stars", "✨")} <b>WELCOME TO ETHIO ONLINE MARKETING!</b>\\n'
+    '<i>Your trusted starting point for building a stronger digital presence and discovering new online opportunities.</i> 🌸\\n\\n'
+    'Welcome! We are delighted to have you here. Ethio Online Marketing is here to make it easier for you to explore digital services, understand your options, and take confident steps toward your online goals. Whether you are a new visitor or returning to continue your journey, this bot will help you find the right information.\\n\\n'
+    f'{premium("accept", "✅")} <b>DISCOVER WHAT YOU NEED</b>\\n'
+    'Explore the available services, learn how they work, and find useful information before making your next decision.\\n\\n'
+    f'{premium("orders", "🛍️")} <b>EXPLORE YOUR OPTIONS</b>\\n'
+    'Choose the service or information that best matches your needs. Visit our official website for the latest details, service descriptions, and available opportunities.\\n\\n'
+    f'{premium("info", "ℹ️")} <b>GET CLEAR GUIDANCE</b>\\n'
+    'Not sure where to begin? Select “How It Works” to understand the simple steps, or open “FAQs & Help” for quick answers to common questions.\\n\\n'
+    f'{premium("support", "💬")} <b>WE ARE HERE TO SUPPORT YOU</b>\\n'
+    'If you have a question or need assistance, choose “Get Support” and send us a message. Tell us what you are looking for so our team can guide you to the next step.\\n\\n'
+    f'{premium("stars", "🌟")} <b>START YOUR ONLINE JOURNEY TODAY!</b>\\n'
+    'Explore, learn, and move forward one step at a time. Thank you for choosing Ethio Online Marketing. We appreciate your trust and look forward to helping you discover new possibilities.\\n\\n'
+    '<b>Choose an option below to get started.</b> You can return to this main menu anytime by sending /start.'
 )
 
 def send_welcome(message):
